@@ -7,220 +7,388 @@
         <title>Document</title>
     </head>
     <body>
+
+        <style>
+            .optional-el {
+                display: none !important;
+            }
+        </style>
+
         <script>
             console.log('page starts');
-        </script>
-        <script>
-            // Initialize the agent at application startup.
-            const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
-            .then(FingerprintJS => FingerprintJS.load())
-        
-            // Get the visitor identifier when you need it.
-            fpPromise
-            .then(fp => fp.get())
-            .then(result => {
-                let pre = document.createElement('pre')
-                pre.textContent = JSON.stringify(result, undefined, 2)
-                document.body.append(pre)
-            })
+
+            let IncludedParams = []
+                try {
+                    IncludedParams = new URL(window.location.href).searchParams.get('includedParams').split(',') 
+                } catch {}
+
+                function check(name = undefined) {
+
+                    let IncludedParams = []
+                    try {
+                        IncludedParams = new URL(top.location.href).searchParams.get('includedParams').split(',') 
+                    } catch {}
+
+                    if(name) {
+                            if(IncludedParams.includes(name)) {
+                                return true
+                            }
+                            return false
+                        }
+
+                        else {
+                            Array.from(document.getElementsByClassName('optional-el')).map(el => {
+                                if(IncludedParams.includes(el.getAttribute('x-name'))) {
+                                    el.style.display = 'block'
+                                    el.classList.remove('optional-el')
+                                }
+                            })
+                        }
+
+                    
+                    return false
+                }
+
+                window.check = check
+
+            window.onload = () => {
+                
+
+                console.log(IncludedParams)
+
+                Array.from(document.getElementsByClassName('x-checkbox')).map(e => {
+                    if(!IncludedParams.includes(e.getAttribute('x-for'))) {
+                        // should stay unchecked
+                        e.checked = false
+                    }
+                    else {
+                        e.checked = true
+                    }
+                })
+
+                function switchParam(name) {
+                    let newUrl
+                    if(IncludedParams.includes(name)) {
+                        // remove it
+                        IncludedParams.splice(IncludedParams.indexOf(name), 1)
+                    }
+                    else {
+                        // add it
+                        IncludedParams.push(name)
+                    }
+                    let a = new URL(window.location.href)
+                    console.log(window.location.href, a.search)
+                    window.location.href = window.location.href.replace(a.search, '') + `?includedParams=${IncludedParams.filter(x => x.length > 0).join(',')}`
+                }
+
+                window.switchParam = switchParam
+
+                check()
+            }
+
         </script>
 
         <p>-- iframe with blob url as content</p>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="1" onclick="switchParam('1')">
         <script>
             const blobContent = new Blob(["<script>const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>"], {type: 'text/html'})
             let iFrame = document.createElement('iframe')
-            iFrame.src = URL.createObjectURL(blobContent)
-            document.body.appendChild(iFrame)
+            iFrame.className = 'optional-el'
+            iFrame.setAttribute('x-name', '1')
+            if(check('1')) {
+                console.log('1')
+                iFrame.src = URL.createObjectURL(blobContent)
+                document.body.appendChild(iFrame)
+            }
         </script>
 
         <p>-- iframe with data url as content</p>
-        <iframe src="data:text/html;base64,PGh0bWw+Cjxib2R5Pgo8c2NyaXB0PgogICAgLy8gSW5pdGlhbGl6ZSB0aGUgYWdlbnQgYXQgYXBwbGljYXRpb24gc3RhcnR1cC4KICAgIGNvbnN0IGZwUHJvbWlzZSA9IGltcG9ydCgnaHR0cHM6Ly9vcGVuZnBjZG4uaW8vZmluZ2VycHJpbnRqcy92MycpCiAgICAudGhlbihGaW5nZXJwcmludEpTID0+IEZpbmdlcnByaW50SlMubG9hZCgpKQoKICAgIC8vIEdldCB0aGUgdmlzaXRvciBpZGVudGlmaWVyIHdoZW4geW91IG5lZWQgaXQuCiAgICBmcFByb21pc2UKICAgIC50aGVuKGZwID0+IGZwLmdldCgpKQogICAgLnRoZW4ocmVzdWx0ID0+IHsKICAgICAgICBsZXQgcHJlID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgncHJlJykKICAgICAgICBwcmUudGV4dENvbnRlbnQgPSBKU09OLnN0cmluZ2lmeShyZXN1bHQsIHVuZGVmaW5lZCwgMikKICAgICAgICBkb2N1bWVudC5ib2R5LmFwcGVuZChwcmUpCiAgICB9KQo8L3NjcmlwdD4KPC9ib2R5Pgo8L2h0bWw+"></iframe>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="2" onclick="switchParam('2')">
+        <script>
+            if(check('2')) {
+                document.body.insertAdjacentHTML('beforeend',`<iframe class="optional-el" x-name="2" src="data:text/html;base64,PGh0bWw+Cjxib2R5Pgo8c2NyaXB0PgogICAgY29uc29sZS5sb2coJ2RhdGEgdXJpJyk7CiAgICAvLyBJbml0aWFsaXplIHRoZSBhZ2VudCBhdCBhcHBsaWNhdGlvbiBzdGFydHVwLgogICAgY29uc3QgZnBQcm9taXNlID0gaW1wb3J0KCdodHRwczovL29wZW5mcGNkbi5pby9maW5nZXJwcmludGpzL3YzJykKICAgIC50aGVuKEZpbmdlcnByaW50SlMgPT4gRmluZ2VycHJpbnRKUy5sb2FkKCkpCgogICAgLy8gR2V0IHRoZSB2aXNpdG9yIGlkZW50aWZpZXIgd2hlbiB5b3UgbmVlZCBpdC4KICAgIGZwUHJvbWlzZQogICAgLnRoZW4oZnAgPT4gZnAuZ2V0KCkpCiAgICAudGhlbihyZXN1bHQgPT4gewogICAgICAgIGxldCBwcmUgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdwcmUnKQogICAgICAgIHByZS50ZXh0Q29udGVudCA9IEpTT04uc3RyaW5naWZ5KHJlc3VsdCwgdW5kZWZpbmVkLCAyKQogICAgICAgIGRvY3VtZW50LmJvZHkuYXBwZW5kKHByZSkKICAgIH0pCjwvc2NyaXB0Pgo8L2JvZHk+CjwvaHRtbD4="></iframe>`)
+            }
+        </script>
 
         <p>-- iframe is created and filled with js</p>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="3" onclick="switchParam('3')">
         <script>
             let s = document.createElement('iframe')
-            s.style = `style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"`
-            s.srcdoc = "<script>console.log('srcdoc js here');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>"
-            ;
-            document.body.appendChild(s)
+            s.className = 'optional-el'
+            s.setAttribute('x-name', '3')
+            if(check('3')) {
+                s.style = `style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"`
+                s.srcdoc = "<script>console.log('3 srcdoc js here');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>";
+                document.body.appendChild(s)
+            }
         </script>
 
         <p>-- iframe with srcdoc that is loaded on page load</p>
-        <iframe srcdoc="
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="4" onclick="switchParam('4')">
+        <iframe class="optional-el" x-name="4" srcdoc="
             <script>
-                console.log('srcdoc here');
-                // Initialize the agent at application startup.
-                const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
-                .then(FingerprintJS => FingerprintJS.load())
-            
-                // Get the visitor identifier when you need it.
-                fpPromise
-                .then(fp => fp.get())
-                .then(result => {
-                    let pre = document.createElement('pre')
-                    pre.textContent = JSON.stringify(result, undefined, 2)
-                    document.body.append(pre)
-                })
+                if(top.check('4')) {
+                    console.log('4 srcdoc here');
+                    // Initialize the agent at application startup.
+                    const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+                    .then(FingerprintJS => FingerprintJS.load())
+                
+                    // Get the visitor identifier when you need it.
+                    fpPromise
+                    .then(fp => fp.get())
+                    .then(result => {
+                        let pre = document.createElement('pre')
+                        pre.textContent = JSON.stringify(result, undefined, 2)
+                        document.body.append(pre)
+                    })
+                }
             </script>
         ">
         </iframe>
 
         <p>-- empty iframe type 1</p>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="5" onclick="switchParam('5')">
         <script>
             (function() {
-                let str = `console.log('iframe eval 1');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                let str = `console.log('5 iframe eval 1');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
                 const length = frames.length
                 const iframe = document.createElement("iframe")
+                iframe.className = 'optional-el'
+                iframe.setAttribute('x-name', '5')
                 document.body.appendChild(iframe)
                 const iframeWindow = frames[length]
-                iframeWindow.eval(str)
+                if(check('5')) iframeWindow.eval(str)
             })()
         </script>
 
         <p>-- empty iframe type 2</p>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="6" onclick="switchParam('6')">
         <script>
             (function() {
-                let str = `console.log('iframe eval 2');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                let str = `console.log('6 iframe eval 2');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
                 const length = window.length
                 const iframe = document.createElement("iframe")
+                iframe.className = 'optional-el'
+                iframe.setAttribute('x-name', '6')
                 document.body.appendChild(iframe)
                 const iframeWindow = window[length]
+                if(check('6'))
                 iframeWindow.eval(str)
             })()
         </script>
 
         <p>-- empty iframe type 3</p>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="7" onclick="switchParam('7')">
         <script>
             (function() {
-                let str = `console.log('iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                let str = `console.log('7 iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
                 const length = window.length
                 const div = document.createElement("div")
+                div.className = 'optional-el'
+                div.setAttribute('x-name', '7')
                 document.body.appendChild(div)
                 div.innerHTML = "<iframe></iframe>"
                 const iframeWindow = window[length]
+                if(check('7'))
                 iframeWindow.eval(str)
             })()
         </script>
 
         <p>-- empty iframe type 4 (baked in page)</p>
-        <iframe id="ifr4baked"></iframe>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="8" onclick="switchParam('8')">
+        <iframe class="optional-el" x-name="8" id="ifr4baked"></iframe>
         <script>
             (function() {
-                let str = `console.log('iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                let str = `console.log('8 iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
                 const iframeWindow = document.getElementById('ifr4baked').contentWindow
+                if(check('8'))
                 iframeWindow.eval(str)
             })()
         </script>
 
         <p>-- empty iframe type 1 (sandbox)</p>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="9" onclick="switchParam('9')">
         <script>
             (function() {
-                let str = `console.log('iframe eval 1');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                let str = `console.log('9 iframe eval 1');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
                 const length = frames.length
                 const iframe = document.createElement("iframe")
+                iframe.className = 'optional-el'
+                iframe.setAttribute('x-name', '9')
                 iframe.sandbox = 'allow-same-origin allow-scripts' // empty for all restrictions (we will add same origin in order to eval)
                 document.body.appendChild(iframe)
                 const iframeWindow = frames[length]
+                if(check('9'))
                 iframeWindow.eval(str)
             })()
         </script>
 
         <p>-- empty iframe type 2 (sandbox)</p>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="10" onclick="switchParam('10')">
         <script>
             (function() {
-                let str = `console.log('iframe eval 2');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                let str = `console.log('10 iframe eval 2');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
                 const length = window.length
                 const iframe = document.createElement("iframe")
+                iframe.className = 'optional-el'
+                iframe.setAttribute('x-name', '10')
                 iframe.sandbox = 'allow-same-origin allow-scripts' // empty for all restrictions (we will add same origin in order to eval)
                 document.body.appendChild(iframe)
                 const iframeWindow = window[length]
+                if(check('10'))
                 iframeWindow.eval(str)
             })()
         </script>
 
         <p>-- empty iframe type 3 (sandbox)</p>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="11" onclick="switchParam('11')">
         <script>
             (function() {
-                let str = `console.log('iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                let str = `console.log('11 iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
                 const length = window.length
                 const div = document.createElement("div")
+                div.className = 'optional-el'
+                div.setAttribute('x-name', '11')
                 document.body.appendChild(div)
                 div.innerHTML = "<iframe></iframe>"
                 div.sandbox = 'allow-same-origin allow-scripts' // empty for all restrictions (we will add same origin in order to eval)
                 const iframeWindow = window[length]
+                if(check('11'))
                 iframeWindow.eval(str)
             })()
         </script>
 
         <p>-- empty iframe type 4 (baked in page) (sandbox)</p>
-        <iframe id="ifr4bakedSandbox" sandbox="allow-same-origin allow-scripts"></iframe>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="12" onclick="switchParam('12')">
+        <iframe class="optional-el" x-name="12" id="ifr4bakedSandbox" sandbox="allow-same-origin allow-scripts"></iframe>
         <script>
             (function() {
-                let str = `console.log('iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                let str = `console.log('12 iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
                 let iframeWindow = document.getElementById('ifr4bakedSandbox').contentWindow
+                if(check('12'))
                 iframeWindow.eval(str)
             })()
         </script>
 
         <p>-- iframe with srcdoc that is loaded on page load (sandbox)</p>
-        <iframe sandbox="allow-scripts" srcdoc="
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="13" onclick="switchParam('13')">
+        <iframe class="optional-el" x-name="13" sandbox="allow-same-origin allow-scripts" srcdoc="
             <script>
-                console.log('srcdoc here');
-                // Initialize the agent at application startup.
-                const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
-                .then(FingerprintJS => FingerprintJS.load())
-            
-                // Get the visitor identifier when you need it.
-                fpPromise
-                .then(fp => fp.get())
-                .then(result => {
-                    let pre = document.createElement('pre')
-                    pre.textContent = JSON.stringify(result, undefined, 2)
-                    document.body.append(pre)
-                })
+                if(top.check('13')) {
+                    console.log('13 srcdoc here sandbox');
+                    // Initialize the agent at application startup.
+                    const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+                    .then(FingerprintJS => FingerprintJS.load())
+                
+                    // Get the visitor identifier when you need it.
+                    fpPromise
+                    .then(fp => fp.get())
+                    .then(result => {
+                        let pre = document.createElement('pre')
+                        pre.textContent = JSON.stringify(result, undefined, 2)
+                        document.body.append(pre)
+                    })
+                }
+                
             </script>
         ">
         </iframe>
 
         <p>-- iframe srcdoc is created and filled with js (sandbox)</p>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="14" onclick="switchParam('14')">
         <script>
             (function(){
                 let s = document.createElement('iframe')
-                s.sandbox = 'allow-scripts'
-                s.style = `style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"`
-                s.srcdoc = "<script>console.log('srcdoc js here');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>"
-                ;
-                document.body.appendChild(s)
+                s.className = 'optional-el'
+                s.setAttribute('x-name', '14')
+
+                if(check('14')) {
+                    s.sandbox = 'allow-scripts'
+                    s.style = `style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"`
+                    s.srcdoc = "<script>console.log('14 srcdoc js here');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>"
+                    ;
+                    document.body.appendChild(s)
+                }
+
             })()
         </script>
 
         <p>-- iframe with blob url as content (sandbox)</p>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="15" onclick="switchParam('15')">
         <script>
             (function (){
                 const blobContent = new Blob(["<script>const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>"], {type: 'text/html'})
                 let iFrame = document.createElement('iframe')
-                iFrame.sandbox = 'allow-scripts'
-                iFrame.src = URL.createObjectURL(blobContent)
-                document.body.appendChild(iFrame)
+                iFrame.className = 'optional-el'
+                iFrame.setAttribute('x-name', '15')
+                if(check('15')) {
+                    console.log('15')
+                    iFrame.sandbox = 'allow-scripts'
+                    iFrame.src = URL.createObjectURL(blobContent)
+                    document.body.appendChild(iFrame)
+                }
             })()
         </script>
 
         <p>-- iframe with data url as content (sandbox)</p>
-        <iframe sandbox="allow-scripts" src="data:text/html;base64,PGh0bWw+Cjxib2R5Pgo8c2NyaXB0PgogICAgLy8gSW5pdGlhbGl6ZSB0aGUgYWdlbnQgYXQgYXBwbGljYXRpb24gc3RhcnR1cC4KICAgIGNvbnN0IGZwUHJvbWlzZSA9IGltcG9ydCgnaHR0cHM6Ly9vcGVuZnBjZG4uaW8vZmluZ2VycHJpbnRqcy92MycpCiAgICAudGhlbihGaW5nZXJwcmludEpTID0+IEZpbmdlcnByaW50SlMubG9hZCgpKQoKICAgIC8vIEdldCB0aGUgdmlzaXRvciBpZGVudGlmaWVyIHdoZW4geW91IG5lZWQgaXQuCiAgICBmcFByb21pc2UKICAgIC50aGVuKGZwID0+IGZwLmdldCgpKQogICAgLnRoZW4ocmVzdWx0ID0+IHsKICAgICAgICBsZXQgcHJlID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgncHJlJykKICAgICAgICBwcmUudGV4dENvbnRlbnQgPSBKU09OLnN0cmluZ2lmeShyZXN1bHQsIHVuZGVmaW5lZCwgMikKICAgICAgICBkb2N1bWVudC5ib2R5LmFwcGVuZChwcmUpCiAgICB9KQo8L3NjcmlwdD4KPC9ib2R5Pgo8L2h0bWw+"></iframe>
-
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="16" onclick="switchParam('16')">
+        <script>
+            if(check('16')) {
+                document.body.insertAdjacentHTML('beforeend',`<iframe class="optional-el" x-name="16" sandbox="allow-scripts" src="data:text/html;base64,PGh0bWw+Cjxib2R5Pgo8c2NyaXB0PgogICAgY29uc29sZS5sb2coJzE2IGRhdGEgdXJpJyk7CiAgICAvLyBJbml0aWFsaXplIHRoZSBhZ2VudCBhdCBhcHBsaWNhdGlvbiBzdGFydHVwLgogICAgY29uc3QgZnBQcm9taXNlID0gaW1wb3J0KCdodHRwczovL29wZW5mcGNkbi5pby9maW5nZXJwcmludGpzL3YzJykKICAgIC50aGVuKEZpbmdlcnByaW50SlMgPT4gRmluZ2VycHJpbnRKUy5sb2FkKCkpCgogICAgLy8gR2V0IHRoZSB2aXNpdG9yIGlkZW50aWZpZXIgd2hlbiB5b3UgbmVlZCBpdC4KICAgIGZwUHJvbWlzZQogICAgLnRoZW4oZnAgPT4gZnAuZ2V0KCkpCiAgICAudGhlbihyZXN1bHQgPT4gewogICAgICAgIGxldCBwcmUgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdwcmUnKQogICAgICAgIHByZS50ZXh0Q29udGVudCA9IEpTT04uc3RyaW5naWZ5KHJlc3VsdCwgdW5kZWZpbmVkLCAyKQogICAgICAgIGRvY3VtZW50LmJvZHkuYXBwZW5kKHByZSkKICAgIH0pCjwvc2NyaXB0Pgo8L2JvZHk+CjwvaHRtbD4K"></iframe>`)
+            }
+        </script>
 
         <p>-- iframe with src with same origin as the host (sandbox)</p>
-        <iframe sandbox="allow-scripts" src="https://hoodystiliyan.github.io/iframe.html?version=f36af92"></iframe>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="17" onclick="switchParam('17')">
+        <iframe class="optional-el" x-name="17"  sandbox="allow-scripts" src="https://hoodystiliyan.github.io/iframe.html?version=f36af92"></iframe>
 
         <p>-- iframe with src with different origin as the host (sandbox)</p>
-        <iframe sandbox="allow-scripts" src="https://stiliyankushev.github.io/?version=f36af92"></iframe>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="18" onclick="switchParam('18')">
+        <script>
+            if(check('18')) {
+                console.log('18')
+                document.body.insertAdjacentHTML('beforeend',`<iframe class="optional-el" x-name="18" sandbox="allow-scripts" src="https://stiliyankushev.github.io/?version=f36af92"></iframe>`)
+            }
+        </script>
 
         <p>-- iframe with src with same origin as the host</p>
-        <iframe src="https://hoodystiliyan.github.io/iframe.html?version=f36af92"></iframe>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="19" onclick="switchParam('19')">
+        <script>
+            if(check('19')) {
+                console.log('19')
+                document.body.insertAdjacentHTML('beforeend',`<iframe class="optional-el" x-name="19" src="https://hoodystiliyan.github.io/iframe.html?version=f36af92"></iframe>`)
+            }
+        </script>
+        
 
         <p>-- iframe with src with different origin as the host</p>
-        <iframe src="https://stiliyankushev.github.io/?version=f36af92"></iframe>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="20" onclick="switchParam('20')">
+        <script>
+            if(check('20')) {
+                console.log('20')
+                document.body.insertAdjacentHTML('beforeend',`<iframe class="optional-el" x-name="20" src="https://stiliyankushev.github.io/?version=f36af92"></iframe>`)
+            }
+        </script>
 
         <p>-- top most page context</p>
+        <input type="checkbox" name="" id="" class="x-checkbox" x-for="21" onclick="switchParam('21')">
+
+        <script>
+            if(check('21')) {
+                console.log('21')
+                // Initialize the agent at application startup.
+                const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+                            .then(FingerprintJS => FingerprintJS.load())
+                        
+                            // Get the visitor identifier when you need it.
+                            fpPromise
+                            .then(fp => fp.get())
+                            .then(result => {
+                                let pre = document.createElement('pre')
+                                pre.textContent = JSON.stringify(result, undefined, 2)
+                                document.body.append(pre)
+                            })
+            }
+        </script>
     </body>
 </html>
