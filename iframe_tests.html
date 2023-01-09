@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body>
+        <script>
+            console.log('page starts');
+        </script>
+        <script>
+            // Initialize the agent at application startup.
+            const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+            .then(FingerprintJS => FingerprintJS.load())
+        
+            // Get the visitor identifier when you need it.
+            fpPromise
+            .then(fp => fp.get())
+            .then(result => {
+                let pre = document.createElement('pre')
+                pre.textContent = JSON.stringify(result, undefined, 2)
+                document.body.append(pre)
+            })
+        </script>
+
+        <p style="color:green">HANDLED</p>
+        <p>-- iframe with blob url as content</p>
+        <script>
+            const blobContent = new Blob(["<script>const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>"], {type: 'text/html'})
+            let iFrame = document.createElement('iframe')
+            iFrame.src = URL.createObjectURL(blobContent)
+            document.body.appendChild(iFrame)
+        </script>
+
+        <p style="color:green">HANDLED</p>
+        <p>-- iframe with data url as content</p>
+        <iframe src="data:text/html;base64,PGh0bWw+Cjxib2R5Pgo8c2NyaXB0PgogICAgLy8gSW5pdGlhbGl6ZSB0aGUgYWdlbnQgYXQgYXBwbGljYXRpb24gc3RhcnR1cC4KICAgIGNvbnN0IGZwUHJvbWlzZSA9IGltcG9ydCgnaHR0cHM6Ly9vcGVuZnBjZG4uaW8vZmluZ2VycHJpbnRqcy92MycpCiAgICAudGhlbihGaW5nZXJwcmludEpTID0+IEZpbmdlcnByaW50SlMubG9hZCgpKQoKICAgIC8vIEdldCB0aGUgdmlzaXRvciBpZGVudGlmaWVyIHdoZW4geW91IG5lZWQgaXQuCiAgICBmcFByb21pc2UKICAgIC50aGVuKGZwID0+IGZwLmdldCgpKQogICAgLnRoZW4ocmVzdWx0ID0+IHsKICAgICAgICBsZXQgcHJlID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgncHJlJykKICAgICAgICBwcmUudGV4dENvbnRlbnQgPSBKU09OLnN0cmluZ2lmeShyZXN1bHQsIHVuZGVmaW5lZCwgMikKICAgICAgICBkb2N1bWVudC5ib2R5LmFwcGVuZChwcmUpCiAgICB9KQo8L3NjcmlwdD4KPC9ib2R5Pgo8L2h0bWw+"></iframe>
+
+        <p style="color:green">HANDLED</p>
+        <p>-- iframe is created and filled with js</p>
+        <script>
+            let s = document.createElement('iframe')
+            s.style = `style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"`
+            s.srcdoc = "<script>console.log('srcdoc js here');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>"
+            ;
+            document.body.appendChild(s)
+        </script>
+
+        <p style="color:green">HANDLED</p>
+        <p>-- iframe with srcdoc that is loaded on page load</p>
+        <iframe srcdoc="
+            <script>
+                console.log('srcdoc here');
+                // Initialize the agent at application startup.
+                const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+                .then(FingerprintJS => FingerprintJS.load())
+            
+                // Get the visitor identifier when you need it.
+                fpPromise
+                .then(fp => fp.get())
+                .then(result => {
+                    let pre = document.createElement('pre')
+                    pre.textContent = JSON.stringify(result, undefined, 2)
+                    document.body.append(pre)
+                })
+            </script>
+        ">
+        </iframe>
+
+        <p style="color:green">HANDLED</p>
+        <p>-- iframe with src with same origin as the host</p>
+        <iframe src="https://hoodystiliyan.github.io/iframe.html?version=f36af92"></iframe>
+
+        <p style="color:green">HANDLED</p>
+        <p>-- iframe with src with different origin as the host</p>
+        <iframe src="https://stiliyankushev.github.io/?version=f36af92"></iframe>
+
+        <p style="color:green">HANDLED</p>
+    </body>
+</html>
