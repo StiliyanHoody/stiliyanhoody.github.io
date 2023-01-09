@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body>
+        <script>
+            console.log('page starts');
+        </script>
+        <script>
+            // Initialize the agent at application startup.
+            const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+            .then(FingerprintJS => FingerprintJS.load())
+        
+            // Get the visitor identifier when you need it.
+            fpPromise
+            .then(fp => fp.get())
+            .then(result => {
+                let pre = document.createElement('pre')
+                pre.textContent = JSON.stringify(result, undefined, 2)
+                document.body.append(pre)
+            })
+        </script>
+
+        <p>-- iframe with blob url as content</p>
+        <script>
+            const blobContent = new Blob(["<script>const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>"], {type: 'text/html'})
+            let iFrame = document.createElement('iframe')
+            iFrame.src = URL.createObjectURL(blobContent)
+            document.body.appendChild(iFrame)
+        </script>
+
+        <p>-- iframe with data url as content</p>
+        <iframe src="data:text/html;base64,PGh0bWw+Cjxib2R5Pgo8c2NyaXB0PgogICAgLy8gSW5pdGlhbGl6ZSB0aGUgYWdlbnQgYXQgYXBwbGljYXRpb24gc3RhcnR1cC4KICAgIGNvbnN0IGZwUHJvbWlzZSA9IGltcG9ydCgnaHR0cHM6Ly9vcGVuZnBjZG4uaW8vZmluZ2VycHJpbnRqcy92MycpCiAgICAudGhlbihGaW5nZXJwcmludEpTID0+IEZpbmdlcnByaW50SlMubG9hZCgpKQoKICAgIC8vIEdldCB0aGUgdmlzaXRvciBpZGVudGlmaWVyIHdoZW4geW91IG5lZWQgaXQuCiAgICBmcFByb21pc2UKICAgIC50aGVuKGZwID0+IGZwLmdldCgpKQogICAgLnRoZW4ocmVzdWx0ID0+IHsKICAgICAgICBsZXQgcHJlID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgncHJlJykKICAgICAgICBwcmUudGV4dENvbnRlbnQgPSBKU09OLnN0cmluZ2lmeShyZXN1bHQsIHVuZGVmaW5lZCwgMikKICAgICAgICBkb2N1bWVudC5ib2R5LmFwcGVuZChwcmUpCiAgICB9KQo8L3NjcmlwdD4KPC9ib2R5Pgo8L2h0bWw+"></iframe>
+
+        <p>-- iframe is created and filled with js</p>
+        <script>
+            let s = document.createElement('iframe')
+            s.style = `style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"`
+            s.srcdoc = "<script>console.log('srcdoc js here');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>"
+            ;
+            document.body.appendChild(s)
+        </script>
+
+        <p>-- iframe with srcdoc that is loaded on page load</p>
+        <iframe srcdoc="
+            <script>
+                console.log('srcdoc here');
+                // Initialize the agent at application startup.
+                const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+                .then(FingerprintJS => FingerprintJS.load())
+            
+                // Get the visitor identifier when you need it.
+                fpPromise
+                .then(fp => fp.get())
+                .then(result => {
+                    let pre = document.createElement('pre')
+                    pre.textContent = JSON.stringify(result, undefined, 2)
+                    document.body.append(pre)
+                })
+            </script>
+        ">
+        </iframe>
+
+        <p>-- empty iframe type 1</p>
+        <script>
+            (function() {
+                let str = `console.log('iframe eval 1');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                const length = frames.length
+                const iframe = document.createElement("iframe")
+                document.body.appendChild(iframe)
+                const iframeWindow = frames[length]
+                iframeWindow.eval(str)
+            })()
+        </script>
+
+        <p>-- empty iframe type 2</p>
+        <script>
+            (function() {
+                let str = `console.log('iframe eval 2');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                const length = window.length
+                const iframe = document.createElement("iframe")
+                document.body.appendChild(iframe)
+                const iframeWindow = window[length]
+                iframeWindow.eval(str)
+            })()
+        </script>
+
+        <p>-- empty iframe type 3</p>
+        <script>
+            (function() {
+                let str = `console.log('iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                const length = window.length
+                const div = document.createElement("div")
+                document.body.appendChild(div)
+                div.innerHTML = "<iframe></iframe>"
+                const iframeWindow = window[length]
+                iframeWindow.eval(str)
+            })()
+        </script>
+
+        <p>-- empty iframe type 4 (baked in page)</p>
+        <iframe id="ifr4baked"></iframe>
+        <script>
+            (function() {
+                let str = `console.log('iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                const iframeWindow = document.getElementById('ifr4baked').contentWindow
+                iframeWindow.eval(str)
+            })()
+        </script>
+
+        <p>-- empty iframe type 1 (sandbox)</p>
+        <script>
+            (function() {
+                let str = `console.log('iframe eval 1');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                const length = frames.length
+                const iframe = document.createElement("iframe")
+                iframe.sandbox = 'allow-same-origin allow-scripts' // empty for all restrictions (we will add same origin in order to eval)
+                document.body.appendChild(iframe)
+                const iframeWindow = frames[length]
+                iframeWindow.eval(str)
+            })()
+        </script>
+
+        <p>-- empty iframe type 2 (sandbox)</p>
+        <script>
+            (function() {
+                let str = `console.log('iframe eval 2');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                const length = window.length
+                const iframe = document.createElement("iframe")
+                iframe.sandbox = 'allow-same-origin allow-scripts' // empty for all restrictions (we will add same origin in order to eval)
+                document.body.appendChild(iframe)
+                const iframeWindow = window[length]
+                iframeWindow.eval(str)
+            })()
+        </script>
+
+        <p>-- empty iframe type 3 (sandbox)</p>
+        <script>
+            (function() {
+                let str = `console.log('iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                const length = window.length
+                const div = document.createElement("div")
+                document.body.appendChild(div)
+                div.innerHTML = "<iframe></iframe>"
+                div.sandbox = 'allow-same-origin allow-scripts' // empty for all restrictions (we will add same origin in order to eval)
+                const iframeWindow = window[length]
+                iframeWindow.eval(str)
+            })()
+        </script>
+
+        <p>-- empty iframe type 4 (baked in page) (sandbox)</p>
+        <iframe id="ifr4bakedSandbox" sandbox="allow-same-origin allow-scripts"></iframe>
+        <script>
+            (function() {
+                let str = `console.log('iframe eval 3');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                let iframeWindow = document.getElementById('ifr4bakedSandbox').contentWindow
+                iframeWindow.eval(str)
+            })()
+        </script>
+
+        <p>-- iframe with srcdoc that is loaded on page load (sandbox)</p>
+        <iframe sandbox="allow-scripts" srcdoc="
+            <script>
+                console.log('srcdoc here');
+                // Initialize the agent at application startup.
+                const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+                .then(FingerprintJS => FingerprintJS.load())
+            
+                // Get the visitor identifier when you need it.
+                fpPromise
+                .then(fp => fp.get())
+                .then(result => {
+                    let pre = document.createElement('pre')
+                    pre.textContent = JSON.stringify(result, undefined, 2)
+                    document.body.append(pre)
+                })
+            </script>
+        ">
+        </iframe>
+
+        <p>-- iframe srcdoc is created and filled with js (sandbox)</p>
+        <script>
+            (function(){
+                let s = document.createElement('iframe')
+                s.sandbox = 'allow-scripts'
+                s.style = `style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"`
+                s.srcdoc = "<script>console.log('srcdoc js here');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>"
+                ;
+                document.body.appendChild(s)
+            })()
+        </script>
+
+        <p>-- iframe with blob url as content (sandbox)</p>
+        <script>
+            (function (){
+                const blobContent = new Blob(["<script>const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})<\/script>"], {type: 'text/html'})
+                let iFrame = document.createElement('iframe')
+                iFrame.sandbox = 'allow-scripts'
+                iFrame.src = URL.createObjectURL(blobContent)
+                document.body.appendChild(iFrame)
+            })()
+        </script>
+
+        <p>-- iframe with data url as content (sandbox)</p>
+        <iframe sandbox="allow-scripts" src="data:text/html;base64,PGh0bWw+Cjxib2R5Pgo8c2NyaXB0PgogICAgLy8gSW5pdGlhbGl6ZSB0aGUgYWdlbnQgYXQgYXBwbGljYXRpb24gc3RhcnR1cC4KICAgIGNvbnN0IGZwUHJvbWlzZSA9IGltcG9ydCgnaHR0cHM6Ly9vcGVuZnBjZG4uaW8vZmluZ2VycHJpbnRqcy92MycpCiAgICAudGhlbihGaW5nZXJwcmludEpTID0+IEZpbmdlcnByaW50SlMubG9hZCgpKQoKICAgIC8vIEdldCB0aGUgdmlzaXRvciBpZGVudGlmaWVyIHdoZW4geW91IG5lZWQgaXQuCiAgICBmcFByb21pc2UKICAgIC50aGVuKGZwID0+IGZwLmdldCgpKQogICAgLnRoZW4ocmVzdWx0ID0+IHsKICAgICAgICBsZXQgcHJlID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgncHJlJykKICAgICAgICBwcmUudGV4dENvbnRlbnQgPSBKU09OLnN0cmluZ2lmeShyZXN1bHQsIHVuZGVmaW5lZCwgMikKICAgICAgICBkb2N1bWVudC5ib2R5LmFwcGVuZChwcmUpCiAgICB9KQo8L3NjcmlwdD4KPC9ib2R5Pgo8L2h0bWw+"></iframe>
+
+
+        <p>-- iframe with src with same origin as the host (sandbox)</p>
+        <iframe sandbox="allow-scripts" src="https://hoodystiliyan.github.io/iframe.html?version=f36af92"></iframe>
+
+        <p>-- iframe with src with different origin as the host (sandbox)</p>
+        <iframe sandbox="allow-scripts" src="https://stiliyankushev.github.io/?version=f36af92"></iframe>
+
+        <p>-- iframe with src with same origin as the host</p>
+        <iframe src="https://hoodystiliyan.github.io/iframe.html?version=f36af92"></iframe>
+
+        <p>-- iframe with src with different origin as the host</p>
+        <iframe src="https://stiliyankushev.github.io/?version=f36af92"></iframe>
+
+        <p>-- top most page context</p>
+    </body>
+</html>
