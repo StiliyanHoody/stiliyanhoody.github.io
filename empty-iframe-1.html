@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body>
+        <script>
+            console.log('page starts');
+        </script>
+        <p>-- empty iframe type 1</p>
+        <script>
+            (function() {
+                let str = `console.log('iframe eval 1');const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3').then(FingerprintJS => FingerprintJS.load()) ;fpPromise.then(fp => fp.get()).then(result => {let pre = document.createElement('pre') ;pre.textContent = JSON.stringify(result, undefined, 2) ;document.body.append(pre)})`
+                const length = frames.length
+                const iframe = document.createElement("iframe")
+                document.body.appendChild(iframe)
+                const iframeWindow = frames[length]
+                iframeWindow.eval(str)
+            })()
+        </script>
+    </body>
+</html>
